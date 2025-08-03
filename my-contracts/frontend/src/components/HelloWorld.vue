@@ -13,10 +13,34 @@ import { ethers } from 'ethers';
 // 合约地址和 ABI
 const contractAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512'; // 需要替换为实际部署后的合约地址
 const contractABI = [
-  "function increment() public",
-  "function decrement() public",
-  "function count() public view returns (uint)"
-];
+    {
+      "inputs": [],
+      "name": "count",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "decrement",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "increment",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ];
 
 export default {
   setup() {
