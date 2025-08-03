@@ -99,6 +99,7 @@ export default {
     const incrementCount = async () => {
       try {
         const tx = await contract.value.increment();
+        console.log(`Transaction sent by: ${tx.from}`);
         console.log("Transaction Hash:", tx.hash)
         getTransactionDetails(tx.hash); // 获取交易详情
         await tx.wait(); // 等待交易确认
@@ -112,6 +113,7 @@ export default {
     const decrementCount = async () => {
       try {
         const tx = await contract.value.decrement();
+        console.log(`Transaction sent by: ${tx.from}`);
         getTransactionDetails(tx.hash); // 获取交易详情
         await tx.wait(); // 等待交易确认
         updateCount(); // 更新计数
