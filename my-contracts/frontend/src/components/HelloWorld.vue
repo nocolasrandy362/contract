@@ -68,10 +68,39 @@ export default {
       count.value = currentCount.toNumber(); // 更新组件中的 count
     };
 
+
+    async function getTransactionDetails(txHash) {
+      // 获取交易收据
+      const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545"); // 或者使用主网RPC URL
+      const receipt = await provider.getTransactionReceipt(txHash);
+      if (!receipt) {
+        console.log("Transaction not found!");
+        return;
+      }
+
+      // 获取实际消耗的 Gas
+      const gasUsed = receipt.gasUsed.toString();
+
+      // 获取当前的 Gas Price
+      const gasPrice = await provider.getGasPrice();  // 获取 Gas Price（单位：wei）
+      const gasPriceInGwei = ethers.utils.formatUnits(gasPrice, 'gwei');  // 转换为 Gwei
+
+      // 计算总费用（单位：ETH）
+      const totalFeeInWei = gasUsed * gasPrice;
+      const totalFeeInEth = ethers.utils.formatEther(totalFeeInWei.toString());
+
+      // 输出交易费用信息
+      console.log(`Gas Used: ${gasUsed} Gas`);
+      console.log(`Gas Price: ${gasPriceInGwei} Gwei`);
+      console.log(`Total Fee: ${totalFeeInEth} ETH`);
+    }
+
     // 增加计数
     const incrementCount = async () => {
       try {
         const tx = await contract.value.increment();
+        console.log("Transaction Hash:", tx.hash)
+        getTransactionDetails(tx.hash); // 获取交易详情
         await tx.wait(); // 等待交易确认
         updateCount(); // 更新计数
       } catch (error) {
@@ -83,6 +112,7 @@ export default {
     const decrementCount = async () => {
       try {
         const tx = await contract.value.decrement();
+        getTransactionDetails(tx.hash); // 获取交易详情
         await tx.wait(); // 等待交易确认
         updateCount(); // 更新计数
       } catch (error) {
