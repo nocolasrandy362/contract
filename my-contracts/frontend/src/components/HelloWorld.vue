@@ -3,6 +3,15 @@
     <h2>Current Count: {{ count }}</h2>
     <button @click="incrementCount">Increment</button>
     <button @click="decrementCount">Decrement</button>
+
+    <!-- 显示交易信息 -->
+    <div v-if="transactionHash">
+      <h3>Transaction Details:</h3>
+      <p><strong>Transaction Hash:</strong> {{ transactionHash }}</p>
+      <p><strong>Gas Used:</strong> {{ gasUsed }} gas</p>
+      <p><strong>Gas Price:</strong> {{ gasPrice }} Gwei</p>
+      <p><strong>Total Fee:</strong> {{ totalFee }} ETH</p>
+    </div>
   </div>
 </template>
 
@@ -24,6 +33,11 @@ export default {
     const provider = ref(null);
     const contract = ref(null);
     const signer = ref(null);
+
+    const transactionHash = ref(null); // 用来保存交易哈希
+    const gasUsed = ref(null); // 用来保存实际消耗的 Gas
+    const gasPrice = ref(null); // 用来保存 Gas 价格
+    const totalFee = ref(null); // 用来保存总费用（ETH）
 
     // 初始化合约
     const initializeContract = async () => {
@@ -48,7 +62,17 @@ export default {
     const incrementCount = async () => {
       try {
         const tx = await contract.value.increment();
+        console.log('increase Detail',tx)
+        transactionHash.value = tx.hash; // 保存交易哈希
         await tx.wait(); // 等待交易确认
+
+        // 获取交易信息
+        const receipt = await provider.value.getTransactionReceipt(tx.hash);
+        gasUsed.value = receipt.gasUsed.toString(); // 获取实际消耗的 Gas
+        gasPrice.value = ethers.utils.formatUnits(await provider.value.getGasPrice(), 'gwei'); // 获取 Gas Price（单位：Gwei）
+        const totalFeeInWei = receipt.gasUsed.mul(await provider.value.getGasPrice()); // 计算总费用
+        totalFee.value = ethers.utils.formatEther(totalFeeInWei); // 转换为 ETH
+
         updateCount(); // 更新计数
       } catch (error) {
         console.error("Error incrementing count:", error);
@@ -59,7 +83,16 @@ export default {
     const decrementCount = async () => {
       try {
         const tx = await contract.value.decrement();
+        transactionHash.value = tx.hash; // 保存交易哈希
         await tx.wait(); // 等待交易确认
+
+        // 获取交易信息
+        const receipt = await provider.value.getTransactionReceipt(tx.hash);
+        gasUsed.value = receipt.gasUsed.toString(); // 获取实际消耗的 Gas
+        gasPrice.value = ethers.utils.formatUnits(await provider.value.getGasPrice(), 'gwei'); // 获取 Gas Price（单位：Gwei）
+        const totalFeeInWei = receipt.gasUsed.mul(await provider.value.getGasPrice()); // 计算总费用
+        totalFee.value = ethers.utils.formatEther(totalFeeInWei); // 转换为 ETH
+
         updateCount(); // 更新计数
       } catch (error) {
         console.error("Error decrementing count:", error);
@@ -81,7 +114,11 @@ export default {
     return {
       count,
       incrementCount,
-      decrementCount
+      decrementCount,
+      transactionHash,
+      gasUsed,
+      gasPrice,
+      totalFee
     };
   }
 };
